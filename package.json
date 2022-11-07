@@ -1,0 +1,27 @@
+{
+  "name": "transaction-fee-processing",
+  "version": "1.0.0",
+  "description": "An API for calculating the fee applicable to a transaction based on specific fee configurations",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "jest --watch"
+  },
+  "jest":{
+    "testEnvironment":"node"
+  },
+  "keywords": [
+    "fee-processing"
+  ],
+  "author": "Matthew Enyina",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "winston": "^3.8.2"
+  },
+  "devDependencies": {
+    "jest": "^29.2.2",
+    "supertest": "^6.3.1"
+  }
+}
