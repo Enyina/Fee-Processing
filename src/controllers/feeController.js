@@ -34,8 +34,10 @@ exports.getTransactionFee = catchAsync((req, res, next) => {
   try {
     const feeConfigFile = fs.readFileSync("feeConfig.json");
     configFile = JSON.parse(feeConfigFile);
+    console.log(configFile);
   } catch (err) {
     // logger.error(JSON.stringify(err));
+    console.log(err);
     return next(new AppError("No fee configuration settings found", 500));
   }
 

@@ -5,22 +5,27 @@ const getConfig = (transactionType, transaction_E_Prop, feeConfigArr) => {
     //Narrowing down cases based on priorities on feeConfig
     case "CREDIT-CARD":
       if (transaction_E_Prop === "VISA") {
+        // console.log(transaction_E_Prop);
+
         //loop through to get specific feeConfig
         for (let item of feeConfigArr) {
           const configArr = item.split(" ");
           //get desired property for comparism
           const [, , , , feeConfigE_Prop] = configArr;
 
-          if (feeConfigE_Prop != "VISA") {
+          if (feeConfigEntity === "CREDIT-CARD" && feeConfigE_Prop === "VISA") {
             return configArr;
           }
         }
       } else {
+        // console.log(transaction_E_Prop);
+        // console.log(transactionType);
         for (let item of feeConfigArr) {
           const configArr = item.split(" ");
-          const [, , , , feeConfigE_Prop] = configArr;
+          const [, , , feeConfigEntity, feeConfigE_Prop] = configArr;
 
-          if (feeConfigE_Prop != "VISA") {
+          if (feeConfigEntity === "CREDIT-CARD" && feeConfigE_Prop != "VISA") {
+            // console.log(feeConfigEntity, feeConfigE_Prop);
             return configArr;
           }
         }
@@ -29,7 +34,10 @@ const getConfig = (transactionType, transaction_E_Prop, feeConfigArr) => {
     case "BANK-ACCOUNT":
       for (let item of feeConfigArr) {
         const configArr = item.split(" ");
-        return configArr;
+        const [, , , feeConfigEntity, feeConfigE_Prop] = configArr;
+        if (feeConfigEntity === "BANK-ACCOUNT") {
+          return configArr;
+        }
       }
       break;
     case "USSD":
@@ -38,18 +46,17 @@ const getConfig = (transactionType, transaction_E_Prop, feeConfigArr) => {
         for (let item of feeConfigArr) {
           const configArr = item.split(" ");
           //get desired property for comparism
-          const [, , , , feeConfigE_Prop] = configArr;
-
-          if (feeConfigE_Prop != "MTN") {
+          const [, , , feeConfigEntity, feeConfigE_Prop] = configArr;
+          if (feeConfigEntity === "USSD" && feeConfigE_Prop != "MTN") {
             return configArr;
           }
         }
       } else {
         for (let item of feeConfigArr) {
           const configArr = item.split(" ");
-          const [, , , , feeConfigE_Prop] = configArr;
+          const [, , , feeConfigEntity, feeConfigE_Prop] = configArr;
 
-          if (feeConfigE_Prop != "MTN") {
+          if (feeConfigEntity === "USSD" && feeConfigE_Prop != "MTN") {
             return configArr;
           }
         }
@@ -108,4 +115,5 @@ const getHighestSpecificConfig = (transactionPayload, feeConfig) => {
 module.exports = {
   getHighestSpecificConfig,
   getAppliedFee,
+  getConfig,
 };
