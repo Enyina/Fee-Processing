@@ -7,8 +7,8 @@
     "start": "node index.js",
     "test": "jest --watch"
   },
-  "jest":{
-    "testEnvironment":"node"
+  "jest": {
+    "testEnvironment": "node"
   },
   "keywords": [
     "fee-processing"
