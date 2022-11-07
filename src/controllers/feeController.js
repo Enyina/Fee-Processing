@@ -23,7 +23,7 @@ exports.feeParser = catchAsync((req, res, next) => {
 
     res.status(200).json({ status: "ok" });
   } catch (err) {
-    logger.error(JSON.stringify(err));
+    // logger.error(JSON.stringify(err));
     return next();
   }
 });
@@ -35,7 +35,7 @@ exports.getTransactionFee = catchAsync((req, res, next) => {
     const feeConfigFile = fs.readFileSync("feeConfig.json");
     configFile = JSON.parse(feeConfigFile);
   } catch (err) {
-    logger.error(JSON.stringify(err));
+    // logger.error(JSON.stringify(err));
     return next(new AppError("No fee configuration settings found", 500));
   }
 
@@ -45,7 +45,7 @@ exports.getTransactionFee = catchAsync((req, res, next) => {
     configFile
   );
   if (!correspondingConfig) {
-    logger.error(JSON.stringify(err));
+    // logger.error(JSON.stringify(err));
     return next(
       new AppError("No rates currently available for this transaction", 400)
     );
