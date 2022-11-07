@@ -2,7 +2,7 @@ const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/appError");
 const fs = require("fs");
 const { getAppliedFee, getHighestSpecificConfig } = require("../utils/helper");
-const logger = require("../config/winston");
+// const logger = require("../config/winston");
 
 exports.feeParser = catchAsync((req, res, next) => {
   const { FeeConfigurationSpec } = req.body;
