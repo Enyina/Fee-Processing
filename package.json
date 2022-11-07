@@ -4,7 +4,7 @@
   "description": "An API for calculating the fee applicable to a transaction based on specific fee configurations",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
+    "start": "node dist/index.js",
     "test": "jest --watch"
   },
   "jest":{
