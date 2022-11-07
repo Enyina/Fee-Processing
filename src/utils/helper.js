@@ -1,19 +1,18 @@
 const { transactionData } = require("../model/model");
 
-const getConfig = (transactionType, transaction_E_Prop, feeConfigArr) => {
-  switch (transactionType) {
+const getConfig = (PaymentEntity, feeConfigArr) => {
+  const { ID, Issuer, Brand, Number, SixID, Type, Country } = PaymentEntity;
+  switch (Type) {
     //Narrowing down cases based on priorities on feeConfig
     case "CREDIT-CARD":
-      if (transaction_E_Prop === "VISA") {
-        // console.log(transaction_E_Prop);
-
+      if (Brand === "VISA") {
         //loop through to get specific feeConfig
         for (let item of feeConfigArr) {
           const configArr = item.split(" ");
           //get desired property for comparism
           const [, , , , feeConfigE_Prop] = configArr;
 
-          if (feeConfigEntity === "CREDIT-CARD" && feeConfigE_Prop === "VISA") {
+          if (Type === "CREDIT-CARD" && feeConfigE_Prop === "VISA") {
             return configArr;
           }
         }
@@ -23,9 +22,9 @@ const getConfig = (transactionType, transaction_E_Prop, feeConfigArr) => {
         for (let item of feeConfigArr) {
           const configArr = item.split(" ");
           const [, , , feeConfigEntity, feeConfigE_Prop] = configArr;
+          console.log(Type, Brand);
 
           if (feeConfigEntity === "CREDIT-CARD" && feeConfigE_Prop != "VISA") {
-            // console.log(feeConfigEntity, feeConfigE_Prop);
             return configArr;
           }
         }
@@ -41,22 +40,25 @@ const getConfig = (transactionType, transaction_E_Prop, feeConfigArr) => {
       }
       break;
     case "USSD":
-      if (transaction_E_Prop === "MTN") {
-        //loop through to get specific feeConfig
+      if (Issuer === "MTN") {
+        // console.log(transactionType, transaction_E_Prop);
         for (let item of feeConfigArr) {
           const configArr = item.split(" ");
           //get desired property for comparism
           const [, , , feeConfigEntity, feeConfigE_Prop] = configArr;
-          if (feeConfigEntity === "USSD" && feeConfigE_Prop != "MTN") {
+          if (Type === feeConfigEntity && feeConfigE_Prop === "MTN") {
             return configArr;
           }
         }
       } else {
         for (let item of feeConfigArr) {
+          // console.log(transactionType, transaction_E_Prop);
+          console.log(item);
           const configArr = item.split(" ");
           const [, , , feeConfigEntity, feeConfigE_Prop] = configArr;
 
-          if (feeConfigEntity === "USSD" && feeConfigE_Prop != "MTN") {
+          if (Issuer != feeConfigE_Prop) {
+            console.log("boy");
             return configArr;
           }
         }
@@ -104,11 +106,11 @@ const getHighestSpecificConfig = (transactionPayload, feeConfig) => {
   const locale = CurrencyCountry === Country ? "LOCL" : "INTL";
 
   if (locale === "INTL") {
-    return getConfig(Type, ID || Issuer || Brand || Number || SixID, feeConfig);
+    return getConfig(transactionPayload.PaymentEntity, feeConfig);
   } else if (locale === "LOCL") {
-    return getConfig(Type, ID || Issuer || Brand || Number || SixID, feeConfig);
+    return getConfig(transactionPayload.PaymentEntity, feeConfig);
   } else {
-    return getConfig(Type, ID || Issuer || Brand || Number || SixID, feeConfig);
+    return getConfig(transactionPayload.PaymentEntity, feeConfig);
   }
 };
 

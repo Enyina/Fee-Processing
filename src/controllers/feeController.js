@@ -30,6 +30,11 @@ exports.feeParser = catchAsync((req, res, next) => {
 
 exports.getTransactionFee = catchAsync((req, res, next) => {
   const transactionData = req.body;
+  if ((transactionData.Currency = "USD")) {
+    res.status(400).json({
+      Error: "No fee configuration for USD transactions.",
+    });
+  }
   let configFile = [];
   try {
     const feeConfigFile = fs.readFileSync("feeConfig.json");
