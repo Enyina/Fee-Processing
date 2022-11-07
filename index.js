@@ -1,5 +1,5 @@
-const app = require("./app");
-const { port } = require("./config");
+const app = require("./src/app");
+const { port } = require("./src/config");
 // const logger = require(".config/winston");
 console.log(port);
 
