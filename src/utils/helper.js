@@ -1,17 +1,10 @@
 const { config } = require("dotenv");
 const { transactionData } = require("../model/model");
 
-const f = [
-  "LNPY1221 NGN * * * PERC 1.4",
-  "LNPY1222 NGN INTL CREDIT-CARD VISA PERC 5.0",
-  "LNPY1223 NGN LOCL CREDIT-CARD * FLAT_PERC 50:1.4",
-  "LNPY1224 NGN * BANK-ACCOUNT * FLAT 100",
-  "LNPY1225 NGN * USSD MTN PERC 0.55",
-];
-
 const differentiateArrays = (feeConfigArr) => {
   const intlArray = [];
   const localArray = [];
+  const generalArray = [];
 
   for (let config of feeConfigArr) {
     config = config.split(" ");
@@ -19,6 +12,8 @@ const differentiateArrays = (feeConfigArr) => {
     // console.log(location);
     if (location === "INTL" || location === "*") {
       intlArray.push(config);
+    } else if (location === "*") {
+      generalArray.push(config);
     }
   }
   for (let config of feeConfigArr) {
@@ -30,7 +25,7 @@ const differentiateArrays = (feeConfigArr) => {
     }
   }
 
-  return [intlArray, localArray];
+  return [intlArray, localArray, generalArray];
 };
 
 const getConfig = (PaymentEntity, feeConfigArr) => {

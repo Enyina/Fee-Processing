@@ -28,6 +28,9 @@ exports.feeParser = catchAsync((req, res, next) => {
     const loclConfigFile = JSON.stringify(feeConfigFile[1], null, 1);
     fs.writeFileSync("loclFeeConfig.json", loclConfigFile);
 
+    const generalConfigFile = JSON.stringify(feeConfigFile[2], null, 1);
+    fs.writeFileSync("generalFeeConfig.json", generalConfigFile);
+
     res.status(200).json({ status: "ok" });
   } catch (err) {
     // logger.error(JSON.stringify(err));
@@ -44,20 +47,20 @@ exports.getTransactionFee = catchAsync((req, res, next) => {
   }
   let configFile = [];
   try {
-    const { ID, Issuer, Brand, Number, SixID, Type, Country } =
-      transactionData.PaymentEntity;
-    const { CurrencyCountry, Currency } = transactionData;
+    const { Country } = transactionData.PaymentEntity;
+    const { CurrencyCountry } = transactionData;
 
     const locale = CurrencyCountry === Country ? "LOCL" : "INTL";
 
     if (locale === "INTL") {
       const feeConfigFile = fs.readFileSync("intlFeeConfig.json");
       configFile = JSON.parse(feeConfigFile);
-      console.log(configFile);
     } else if (locale === "LOCL") {
       const feeConfigFile = fs.readFileSync("loclFeeConfig.json");
       configFile = JSON.parse(feeConfigFile);
-      console.log(configFile);
+    } else {
+      const feeConfigFile = fs.readFileSync("generalFeeConfig.json");
+      configFile = JSON.parse(feeConfigFile);
     }
   } catch (err) {
     // logger.error(JSON.stringify(err));
