@@ -81,7 +81,6 @@ const getConfig = (PaymentEntity, feeConfigArr) => {
       } else {
         for (let configArr of feeConfigArr) {
           const [, , , feeConfigEntity, feeConfigE_Prop] = configArr;
-          console.log(feeConfigEntity);
 
           if (feeConfigE_Prop != "MTN") {
             console.log("boy");
