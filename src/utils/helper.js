@@ -1,4 +1,37 @@
+const { config } = require("dotenv");
 const { transactionData } = require("../model/model");
+
+const f = [
+  "LNPY1221 NGN * * * PERC 1.4",
+  "LNPY1222 NGN INTL CREDIT-CARD VISA PERC 5.0",
+  "LNPY1223 NGN LOCL CREDIT-CARD * FLAT_PERC 50:1.4",
+  "LNPY1224 NGN * BANK-ACCOUNT * FLAT 100",
+  "LNPY1225 NGN * USSD MTN PERC 0.55",
+];
+
+const differentiateArrays = (feeConfigArr) => {
+  const intlArray = [];
+  const localArray = [];
+
+  for (let config of feeConfigArr) {
+    config = config.split(" ");
+    const [, , location, , , ,] = config;
+    // console.log(location);
+    if (location === "INTL" || location === "*") {
+      intlArray.push(config);
+    }
+  }
+  for (let config of feeConfigArr) {
+    config = config.split(" ");
+    const [, , location, , , ,] = config;
+    // console.log(location);
+    if (location === "LOCL" || location === "*") {
+      localArray.push(config);
+    }
+  }
+
+  return [intlArray, localArray];
+};
 
 const getConfig = (PaymentEntity, feeConfigArr) => {
   const { ID, Issuer, Brand, Number, SixID, Type, Country } = PaymentEntity;
@@ -7,8 +40,7 @@ const getConfig = (PaymentEntity, feeConfigArr) => {
     case "CREDIT-CARD":
       if (Brand === "VISA") {
         //loop through to get specific feeConfig
-        for (let item of feeConfigArr) {
-          const configArr = item.split(" ");
+        for (let configArr of feeConfigArr) {
           //get desired property for comparism
           const [, , , , feeConfigE_Prop] = configArr;
 
@@ -19,8 +51,7 @@ const getConfig = (PaymentEntity, feeConfigArr) => {
       } else {
         // console.log(transaction_E_Prop);
         // console.log(transactionType);
-        for (let item of feeConfigArr) {
-          const configArr = item.split(" ");
+        for (let configArr of feeConfigArr) {
           const [, , , feeConfigEntity, feeConfigE_Prop] = configArr;
           console.log(Type, Brand);
 
@@ -31,8 +62,7 @@ const getConfig = (PaymentEntity, feeConfigArr) => {
       }
       break;
     case "BANK-ACCOUNT":
-      for (let item of feeConfigArr) {
-        const configArr = item.split(" ");
+      for (let configArr of feeConfigArr) {
         const [, , , feeConfigEntity, feeConfigE_Prop] = configArr;
         if (feeConfigEntity === "BANK-ACCOUNT") {
           return configArr;
@@ -41,23 +71,19 @@ const getConfig = (PaymentEntity, feeConfigArr) => {
       break;
     case "USSD":
       if (Issuer === "MTN") {
-        // console.log(transactionType, transaction_E_Prop);
-        for (let item of feeConfigArr) {
-          const configArr = item.split(" ");
+        for (let configArr of feeConfigArr) {
           //get desired property for comparism
           const [, , , feeConfigEntity, feeConfigE_Prop] = configArr;
-          if (Type === feeConfigEntity && feeConfigE_Prop === "MTN") {
+          if (Type === "USSD" && feeConfigE_Prop === "MTN") {
             return configArr;
           }
         }
       } else {
-        for (let item of feeConfigArr) {
-          // console.log(transactionType, transaction_E_Prop);
-          console.log(item);
-          const configArr = item.split(" ");
+        for (let configArr of feeConfigArr) {
           const [, , , feeConfigEntity, feeConfigE_Prop] = configArr;
+          console.log(feeConfigEntity);
 
-          if (Issuer != feeConfigE_Prop) {
+          if (feeConfigE_Prop != "MTN") {
             console.log("boy");
             return configArr;
           }
@@ -65,8 +91,7 @@ const getConfig = (PaymentEntity, feeConfigArr) => {
       }
       break;
     default:
-      for (let item of feeConfigArr) {
-        const configArr = item.split(" ");
+      for (let configArr of feeConfigArr) {
         const [, , , , feeConfigE_Prop] = configArr;
 
         if (feeConfigE_Prop === "*") {
@@ -76,6 +101,12 @@ const getConfig = (PaymentEntity, feeConfigArr) => {
   }
 };
 
+/**
+ * @param {String} feeType the feeType value
+ * @param {String} feeValue the feeValue value
+ * @param {Number} transactionAmount amount from thetransaction
+ * @returns appliedFee
+ */
 const getAppliedFee = (feeType, feeValue, transactionAmount) => {
   let appliedFee = 0;
 
@@ -99,23 +130,12 @@ const getAppliedFee = (feeType, feeValue, transactionAmount) => {
  * @returns config array with matching config for a transactiion
  */
 const getHighestSpecificConfig = (transactionPayload, feeConfig) => {
-  const { ID, Issuer, Brand, Number, SixID, Type, Country } =
-    transactionPayload.PaymentEntity;
-  const { CurrencyCountry } = transactionPayload;
-  //   const locale = CurrencyCountry.startsWith("NG") ? "LOCL" : "INTL";
-  const locale = CurrencyCountry === Country ? "LOCL" : "INTL";
-
-  if (locale === "INTL") {
-    return getConfig(transactionPayload.PaymentEntity, feeConfig);
-  } else if (locale === "LOCL") {
-    return getConfig(transactionPayload.PaymentEntity, feeConfig);
-  } else {
-    return getConfig(transactionPayload.PaymentEntity, feeConfig);
-  }
+  return getConfig(transactionPayload.PaymentEntity, feeConfig);
 };
 
 module.exports = {
   getHighestSpecificConfig,
   getAppliedFee,
   getConfig,
+  differentiateArrays,
 };

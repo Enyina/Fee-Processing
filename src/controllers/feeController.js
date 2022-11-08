@@ -1,12 +1,15 @@
 const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/appError");
 const fs = require("fs");
-const { getAppliedFee, getHighestSpecificConfig } = require("../utils/helper");
-// const logger = require("../config/winston");
+const {
+  getAppliedFee,
+  getHighestSpecificConfig,
+  differentiateArrays,
+} = require("../utils/helper");
 
 exports.feeParser = catchAsync((req, res, next) => {
   const { FeeConfigurationSpec } = req.body;
-  console.log(req.body);
+  // console.log(req.body);
   if (!FeeConfigurationSpec) {
     return next(new AppError("NO configuration found", 400));
   }
@@ -17,9 +20,13 @@ exports.feeParser = catchAsync((req, res, next) => {
       .replace(/\)|APPLY\s|:\s/g, "")
       .split("\n");
 
-    //Create json file for the sorted array
-    const feeConfigFile = JSON.stringify(readableConfig, null, 1);
-    fs.writeFileSync("feeConfig.json", feeConfigFile);
+    const feeConfigFile = differentiateArrays(readableConfig);
+
+    const intlConfigFile = JSON.stringify(feeConfigFile[0], null, 1);
+    fs.writeFileSync("intlFeeConfig.json", intlConfigFile);
+
+    const loclConfigFile = JSON.stringify(feeConfigFile[1], null, 1);
+    fs.writeFileSync("loclFeeConfig.json", loclConfigFile);
 
     res.status(200).json({ status: "ok" });
   } catch (err) {
@@ -30,16 +37,28 @@ exports.feeParser = catchAsync((req, res, next) => {
 
 exports.getTransactionFee = catchAsync((req, res, next) => {
   const transactionData = req.body;
-  if ((transactionData.Currency = "USD")) {
+  if (transactionData.Currency === "USD") {
     res.status(400).json({
       Error: "No fee configuration for USD transactions.",
     });
   }
   let configFile = [];
   try {
-    const feeConfigFile = fs.readFileSync("feeConfig.json");
-    configFile = JSON.parse(feeConfigFile);
-    console.log(configFile);
+    const { ID, Issuer, Brand, Number, SixID, Type, Country } =
+      transactionData.PaymentEntity;
+    const { CurrencyCountry, Currency } = transactionData;
+
+    const locale = CurrencyCountry === Country ? "LOCL" : "INTL";
+
+    if (locale === "INTL") {
+      const feeConfigFile = fs.readFileSync("intlFeeConfig.json");
+      configFile = JSON.parse(feeConfigFile);
+      console.log(configFile);
+    } else if (locale === "LOCL") {
+      const feeConfigFile = fs.readFileSync("loclFeeConfig.json");
+      configFile = JSON.parse(feeConfigFile);
+      console.log(configFile);
+    }
   } catch (err) {
     // logger.error(JSON.stringify(err));
     console.log(err);
