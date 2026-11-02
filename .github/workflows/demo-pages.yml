@@ -1,0 +1,45 @@
+name: Fee illustration — static preview
+on:
+  pull_request:
+    paths: ['demo/**', '.github/workflows/demo-pages.yml']
+  push:
+    branches: [main]
+    paths: ['demo/**', '.github/workflows/demo-pages.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run exact-money demo tests and privacy checks
+        run: node --test demo/calc.test.cjs
+      - name: Check JavaScript syntax
+        run: |
+          node --check demo/calc.js
+          node --check demo/app.js
+      - name: Upload static page
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: demo
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: verify
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.publish.outputs.page_url }}
+    steps:
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+      - name: Publish the static demo
+        id: publish
+        uses: actions/deploy-pages@v4
