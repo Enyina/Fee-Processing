@@ -1,5 +1,6 @@
 const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/appError");
+const {validateTransaction} = require("../utils/validateTransaction");
 const fs = require("fs");
 const {
   getAppliedFee,
@@ -10,7 +11,7 @@ const {
 exports.feeParser = catchAsync((req, res, next) => {
   const { FeeConfigurationSpec } = req.body;
   // console.log(req.body);
-  if (!FeeConfigurationSpec) {
+  if (typeof FeeConfigurationSpec !== "string" || !FeeConfigurationSpec.trim() || FeeConfigurationSpec.length > 65536) {
     return next(new AppError("NO configuration found", 400));
   }
 
@@ -34,17 +35,17 @@ exports.feeParser = catchAsync((req, res, next) => {
     res.status(200).json({ status: "ok" });
   } catch (err) {
     // logger.error(JSON.stringify(err));
-    return next();
+    return next(new AppError("Unable to read fee configuration", 400));
   }
 });
 
 exports.getTransactionFee = catchAsync((req, res, next) => {
   const transactionData = req.body;
-  if (transactionData.Currency === "USD") {
-    res.status(400).json({
-      Error: "No fee configuration for USD transactions.",
-    });
+  if (transactionData && transactionData.Currency === "USD") {
+    return res.status(400).json({Error: "No fee configuration for USD transactions."});
   }
+  const invalid = validateTransaction(transactionData);
+  if (invalid) return next(new AppError(invalid, 400));
   let configFile = [];
   try {
     const { Country } = transactionData.PaymentEntity;
@@ -64,7 +65,6 @@ exports.getTransactionFee = catchAsync((req, res, next) => {
     }
   } catch (err) {
     // logger.error(JSON.stringify(err));
-    console.log(err);
     return next(new AppError("No fee configuration settings found", 500));
   }
 
