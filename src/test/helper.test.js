@@ -1,50 +1,26 @@
-const request = require("supertest");
-const {
-  getAppliedFee,
-  getHighestSpecificConfig,
-  getConfig,
-} = require("../utils/helper");
+const {getAppliedFee, getHighestSpecificConfig, differentiateArrays} = require("../utils/helper");
 
-const transactionPayload = {
-  ID: 91204,
-  Amount: 3500,
-  Currency: "NGN",
-  CurrencyCountry: "NG",
-  Customer: {
-    ID: 4211232,
-    EmailAddress: "anonimized292200@anon.io",
-    FullName: "Wenthorth Scoffield",
-    BearsFee: false,
-  },
-  PaymentEntity: {
-    ID: 2203454,
-    Issuer: "AIRTEL",
-    Brand: "",
-    Number: "080234******2903",
-    SixID: 180234,
-    Type: "USSD",
-    Country: "NG",
-  },
-};
-
-const fsc = [
-  "LNPY1221 NGN * * * PERC 1.4",
-  "LNPY1222 NGN INTL CREDIT-CARD VISA PERC 5.0",
-  "LNPY1223 NGN LOCL CREDIT-CARD * FLAT_PERC 50:1.4",
-  "LNPY1224 NGN * BANK-ACCOUNT * FLAT 100",
-  "LNPY1225 NGN * USSD MTN PERC 0.55",
-];
-
-const type = transactionPayload.PaymentEntity.Type;
-// const brand = transactionPayload.PaymentEntity.Brand;
-const brand = transactionPayload.PaymentEntity.Issuer;
-
-test("", () => {
-  const ans = getConfig(type, brand, fsc);
-  expect(ans).toBe({
-    AppliedFeeID: "LNPY1223",
-    AppliedFeeValue: 120,
-    ChargeAmount: 5120,
-    SettlementAmount: 5000,
+describe("fee selection and calculation helpers",()=>{
+  test("selects a matching USSD issuer before generic rules",()=>{
+    const configs=[
+      ["general","NGN","*","*","*","PERC","1.4"],
+      ["ussd-mtn","NGN","LOCL","USSD","MTN","PERC","0.55"],
+    ];
+    const selected=getHighestSpecificConfig({PaymentEntity:{Type:"USSD",Issuer:"MTN"}},configs);
+    expect(selected[0]).toBe("ussd-mtn");
+  });
+  test("computes fixed, percentage and combined fees",()=>{
+    expect(getAppliedFee("FLAT","100",5000)).toBe(100);
+    expect(getAppliedFee("PERC","1.4",5000)).toBe(70);
+    expect(getAppliedFee("FLAT_PERC","50:1.4",5000)).toBe(120);
+  });
+  test("classifies fee rules without losing a local rule",()=>{
+    const input=[
+      "a NGN LOCL BANK-ACCOUNT * FLAT 100",
+      "b NGN INTL CREDIT-CARD VISA PERC 5",
+    ];
+    const [intl,local]=differentiateArrays(input);
+    expect(local.some(row=>row[0]==="a")).toBe(true);
+    expect(intl.some(row=>row[0]==="b")).toBe(true);
   });
 });
