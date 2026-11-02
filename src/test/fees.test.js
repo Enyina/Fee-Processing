@@ -8,7 +8,7 @@ describe("fee configuration endpoint",()=>{
     const spy=jest.spyOn(fs,"writeFileSync").mockImplementation(()=>undefined);
     try {
       const response=await request(app).post("/fees")
-        .send({FeeConfigurationSpec:FCS}).set("Accept","application/json");
+        .send({FeeConfigurationSpec:FCS.FeeConfigurationSpec}).set("Accept","application/json");
       expect(response.status).toBe(200);
       expect(response.body).toEqual({status:"ok"});
       const saved=spy.mock.calls.filter(([name])=>typeof name==="string"&&name.endsWith("FeeConfig.json"));
