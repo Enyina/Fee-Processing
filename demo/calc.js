@@ -12,7 +12,7 @@
     return BigInt(parts[0]) * 100n + BigInt((parts[1] || "").padEnd(2, "0"));
   }
   function basisPoints(value) {
-    if (typeof value !== "string" || !/^(?:0|[1-9]\d{0,1})(?:\.\d{1,2})?$/.test(value.trim())) {
+    if (typeof value !== "string" || !/^(?:0|[1-9]\d?|100)(?:\.\d{1,2})?$/.test(value.trim())) {
       throw new Error("Rate must be between 0 and 100 percent with up to two decimals.");
     }
     const bp = BigInt(value.trim().replace(".", "")) *
