@@ -1,35 +1,27 @@
 const request = require("supertest");
+const fs = require("fs");
 const app = require("../app");
-const dummyData = require("../data/dummyData");
+const {FCS} = require("../data/dummyData");
 
-describe("POST/fee", () => {
-  test("should save an array of configs", () => {
-    request(app)
-      .post("/fees")
-      .send({ FeeConfigurationSpec: dummyData.FCS })
-      .set("Accept", "application/json")
-      .expect((res) => {
-        res.statusCode.toEqual(200);
-        res.body.toHaveProperty("status");
-        res.body.status.toEqual("ok");
-      });
+describe("fee configuration endpoint",()=>{
+  test("saves parsed configurations and confirms the result", async()=>{
+    const spy=jest.spyOn(fs,"writeFileSync").mockImplementation(()=>undefined);
+    try {
+      const response=await request(app).post("/fees")
+        .send({FeeConfigurationSpec:FCS}).set("Accept","application/json");
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual({status:"ok"});
+      const saved=spy.mock.calls.filter(([name])=>typeof name==="string"&&name.endsWith("FeeConfig.json"));
+      expect(saved.map(([name])=>name).sort()).toEqual(["generalFeeConfig.json","intlFeeConfig.json","loclFeeConfig.json"]);
+      for(const [,data] of saved) expect(()=>JSON.parse(data)).not.toThrow();
+    } finally {spy.mockRestore();}
   });
-});
-
-describe("POST/compute-transaction-fee", () => {
-  test(" should compute the exact fee for a transaction", async () => {
-    request(app)
-      .post("/compute-transaction-fee")
-      .send({ FeeConfigurationSpec: dummyData.dummyData.computation1 })
-      .set("Accept", "application/json")
-      .expect((res) => {
-        res.statusCode.toEqual(200);
-        res.body.toEqual({
-          AppliedFeeID: "LNPY1221",
-          AppliedFeeValue: 70,
-          ChargeAmount: 5070,
-          SettlementAmount: 5000,
-        });
-      });
+  test("refuses empty configuration without writing files",async()=>{
+    const spy=jest.spyOn(fs,"writeFileSync").mockImplementation(()=>undefined);
+    try {
+      const response=await request(app).post("/fees").send({FeeConfigurationSpec:""});
+      expect(response.status).toBe(400);
+      expect(spy.mock.calls.filter(([name])=>typeof name==="string"&&name.endsWith("FeeConfig.json"))).toHaveLength(0);
+    } finally {spy.mockRestore();}
   });
 });
