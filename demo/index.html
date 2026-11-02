@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#12151c">
+  <meta name="description" content="An offline educational fee-calculation demo from a personal engineering project. No payments or accounts.">
+  <title>Fee Processing — Calculation Lab</title>
+  <link rel="stylesheet" href="./styles.css">
+  <script src="./calc.js" defer></script>
+  <script src="./app.js" defer></script>
+</head>
+<body>
+  <header class="site-header"><a href="https://github.com/Enyina/Fee-Processing">Fee Processing <span>↗ source</span></a><span>PERSONAL ENGINEERING LAB / STATIC DEMO</span></header>
+  <main class="shell">
+    <div class="intro">
+      <p class="eyebrow"><span class="pulse"></span> A SMALL INTERACTIVE EXPERIMENT</p>
+      <h1>When a fee changes, what does everyone pay?</h1>
+      <p class="lead">Change the amount, rate or who covers the fee. Watch the calculation update instantly—without a payment provider, an account or a server.</p>
+    </div>
+    <div class="workspace">
+      <form id="fee-form" class="panel" novalidate>
+        <h2>Try a calculation</h2>
+        <p class="help">Amounts are in Nigerian naira. This is an educational formula, not a quote from a payment provider.</p>
+        <label for="amount">Payment amount (₦)</label><input id="amount" name="amount" inputmode="decimal" value="1000.00" autocomplete="off" required>
+        <div class="split">
+          <div><label for="fixed">Fixed fee (₦)</label><input id="fixed" name="fixed" inputmode="decimal" value="25.00" required></div>
+          <div><label for="rate">Percentage (%)</label><input id="rate" name="rate" inputmode="decimal" value="1.50" required></div>
+        </div>
+        <label for="cap">Maximum fee (₦) <span>Optional</span></label><input id="cap" name="cap" inputmode="decimal" value="100.00">
+        <fieldset><legend>Who pays the fee?</legend>
+          <label class="radio"><input type="radio" name="payer" value="customer" checked> Customer</label>
+          <label class="radio"><input type="radio" name="payer" value="merchant"> Merchant</label>
+        </fieldset>
+        <button type="submit">Calculate again <span aria-hidden="true">→</span></button>
+      </form>
+      <section class="panel output" aria-labelledby="result-heading">
+        <p class="eyebrow">INSTANT RESULT / SAMPLE DATA</p>
+        <h2 id="result-heading">The breakdown</h2>
+        <div id="results">
+          <div class="result primary"><span>Illustrated processing fee</span><strong id="fee-value">₦40.00</strong></div>
+          <div class="result"><span>Customer charge</span><strong id="charge-value">₦1,040.00</strong></div>
+          <div class="result"><span>Merchant receives</span><strong id="settlement-value">₦1,000.00</strong></div>
+          <p class="explanation" id="explanation"></p>
+        </div>
+        <p class="error" id="error" role="alert" hidden></p>
+        <p class="sr-only" id="status" role="status" aria-live="polite"></p>
+      </section>
+    </div>
+    <aside class="note"><h2>What this demonstrates</h2><p>The interface, input validation and arithmetic are testable in isolation. The calculation uses integer minor units to avoid common decimal rounding mistakes. No payment is sent, stored, or processed.</p><p>The older API project still needs separate work on configuration integrity, access control and financial correctness before it can be described as production-ready.</p></aside>
+  </main>
+  <footer>Designed as a public-safe demo of a personal backend exercise. No financial advice, payment processing or live pricing.</footer>
+</body>
+</html>
