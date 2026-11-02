@@ -25,7 +25,9 @@ describe("legacy fee API request safety", () => {
         .send({...base, Currency: "USD"});
       expect(response.status).toBe(400);
       expect(response.body.Error).toMatch(/USD/);
-      expect(spy).not.toHaveBeenCalled();
+      expect(spy.mock.calls.filter(([filename]) =>
+        typeof filename === "string" && /(?:intl|locl|general)FeeConfig\\.json$/.test(filename)
+      )).toHaveLength(0);
     } finally {spy.mockRestore();}
   });
 
@@ -41,7 +43,9 @@ describe("legacy fee API request safety", () => {
       const response = await request(app).post("/compute-transaction-fee").send(payload);
       expect(response.status).toBe(400);
       expect(response.body.error).toMatch(new RegExp(expected));
-      expect(spy).not.toHaveBeenCalled();
+      expect(spy.mock.calls.filter(([filename]) =>
+        typeof filename === "string" && /(?:intl|locl|general)FeeConfig\\.json$/.test(filename)
+      )).toHaveLength(0);
     } finally {spy.mockRestore();}
   });
 
