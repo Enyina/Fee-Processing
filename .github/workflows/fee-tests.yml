@@ -1,0 +1,23 @@
+name: Fee API regression checks
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install test dependencies
+        run: npm install --ignore-scripts --no-audit --no-fund
+      - name: Run endpoint tests and report open handles
+        run: timeout 100s npm test -- --detectOpenHandles --testTimeout=8000
+      - name: Check syntax
+        run: node --check src/controllers/feeController.js
